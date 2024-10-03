@@ -1,5 +1,6 @@
 import 'package:climat/location.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 const apiKey = '';
@@ -32,10 +33,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   void getWeatherData(double latitude, double longitude) async {
-    String apiKey =
-        '9cb9571827320ddea66d4de1eaebf338'; // Remplace par ta clé API
+    String apiKey = dotenv.env['API_KEY'] ?? '';
+    String baseUrl = dotenv.env['BASE_URL'] ?? '';
+    // Remplace par ta clé API
     var url = Uri.parse(
-        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey');
+        '$baseUrl/weather?lat=$latitude&lon=$longitude&appid=$apiKey');
 
     try {
       var response = await http.get(url);

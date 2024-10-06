@@ -1,9 +1,14 @@
-import 'package:climat/location.dart';
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:climat/locationscreen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
+import 'package:climat/location.dart';
+import 'package:climat/network.dart';
+import 'package:flutter/material.dart';
 
-const apiKey = '';
+String apiKey = dotenv.env['API_KEY'] ?? '';
+String baseUrl = dotenv.env['BASE_URL'] ?? '';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -20,50 +25,38 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getUserLocation();
+    getUserLocationData();
   }
 
-  void getUserLocation() async {
+  void getUserLocationData() async {
     Location position = Location();
     await position.getcurrentLocation();
     latitude = position.latitude;
     longitude = position.longitude;
 
-    getWeatherData(latitude!, longitude!);
-  }
-
-  void getWeatherData(double latitude, double longitude) async {
-    String apiKey = dotenv.env['API_KEY'] ?? '';
-    String baseUrl = dotenv.env['BASE_URL'] ?? '';
     // Remplace par ta clé API
-    var url = Uri.parse(
+
+    NetWorkHelper netWorkHelper = NetWorkHelper(
         '$baseUrl/weather?lat=$latitude&lon=$longitude&appid=$apiKey');
 
-    try {
-      var response = await http.get(url);
+    var weatherData = await netWorkHelper.getWeatherData();
+    // double temperature = decodeData['main']['temp'];
+    // int condition = jsonDecode('weather')[0]['id'];
+    // String cityName = jsonEncode('name');
 
-      if (response.statusCode == 200) {
-        // var weatherData = jsonDecode(response.body);
-        print(response.statusCode);
-      } else {
-        print(
-            'Erreur lors de la récupération des données météo: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Erreur lors de l\'appel API: $e');
-    }
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return Locationscreen(weatherLocation: weatherData);
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: TextButton(
-            onPressed: () {
-              // getUserLocation();
-            },
-            child: Text("GET LOCATION")),
+        body: Center(
+      child: SpinKitWaveSpinner(
+        color: Colors.green,
+        size: 100.0,
       ),
-    );
+    ));
   }
 }
